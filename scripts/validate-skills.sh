@@ -2,7 +2,8 @@
 # Validate every skill under skills/: structure, frontmatter, and a basic
 # secret/personal-data scan. Exits non-zero if any check fails.
 set -u
-cd "$(git rev-parse --show-toplevel)" || exit 1
+top=$(git rev-parse --show-toplevel) || exit 1
+cd "$top" || exit 1
 fail=0
 err() { echo "FAIL: $1"; fail=1; }
 
