@@ -2,6 +2,7 @@
 # Validate every skill under skills/: structure, frontmatter, and a basic
 # secret/personal-data scan. Exits non-zero if any check fails.
 set -u
+cd "$(git rev-parse --show-toplevel)" || exit 1
 fail=0
 err() { echo "FAIL: $1"; fail=1; }
 
@@ -26,7 +27,8 @@ for dir in "${dirs[@]}"; do
     continue
   fi
 
-  fm=$(awk 'NR==1{next} /^---[[:space:]]*$/{exit} {print}' "$f" | tr -d '\r')
+  fm=$(tr -d '\r' < "$f" | awk 'NR==1{next} /^---[[:space:]]*$/{found=1; exit} {print} END{if(!found) exit 1}') \
+    || err "$name: frontmatter not closed with '---'"
 
   echo "$fm" | grep -q '^name:' || err "$name: frontmatter missing 'name:'"
   echo "$fm" | grep -q '^description:' || err "$name: frontmatter missing 'description:'"
@@ -36,17 +38,22 @@ for dir in "${dirs[@]}"; do
     if [ "$declared" != "$name" ]; then
       err "$name: frontmatter name '$declared' does not match folder name"
     fi
-    case "$declared" in
-      *[!a-z0-9-]*) err "$name: name '$declared' is not kebab-case" ;;
-    esac
+    if ! echo "$declared" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+      err "$name: name '$declared' is not kebab-case"
+    fi
   fi
 done
 
-# Secret scan over all tracked files (excluding this script's own patterns).
-if git grep -nIiE \
+# Secret scan over tracked and untracked (non-ignored) files, excluding this
+# script's own patterns. git grep exits 0 on match, 1 on no match, >1 on error.
+git grep --untracked -nIiE \
   "gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(api[_-]?key|secret|password)[[:space:]]*[:=][[:space:]]*['\"][^'\"]{4,}" \
-  -- . ':!scripts/validate-skills.sh'; then
+  -- . ':!scripts/validate-skills.sh'
+scan=$?
+if [ "$scan" -eq 0 ]; then
   err "possible secret found (see matches above)"
+elif [ "$scan" -gt 1 ]; then
+  err "secret scan could not run (git grep exited $scan)"
 fi
 
 if [ "$fail" -eq 0 ]; then
