@@ -39,6 +39,10 @@ Parallel work dispatcher. Type `/delegate` followed by a list of work items (or 
 
 It scans the list for real dependencies and builds the minimum number of waves — independent items run in parallel, dependent items wait for their prerequisites. Before spending any tokens it prints a plan showing the model and agent type chosen per item. Items too vague to act on are listed back with questions instead of guessed at. When agents finish, it reports per item what changed, what succeeded, and what failed — including a consistency check across agents that touched the same area.
 
+### [app-feedback-form](skills/app-feedback-form/SKILL.md)
+
+House standard for in-app feedback. Invoke it when adding a feedback form, bug-report button, or support email section to any app, and it applies the format shared by Anemoi, Ika Manager, and Hoppity: a **Report a bug / Send feedback** pair placed directly above the About section in Settings, rendered with the app's own settings UI primitives. Each action opens the user's email client via `ACTION_SENDTO` with a `[AppName]`-tagged subject and a prefilled body carrying app version, device model, and Android release plus guided prompts — with a graceful inline fallback when no email app is installed. The skill records each app's support addresses in a table; new apps get added to it as the section is rolled out.
+
 ### [example-skill](skills/example-skill/SKILL.md)
 
 A template, not a working skill. Copy the folder, rename it, and replace the frontmatter and body to start a new skill. It documents the two required frontmatter fields (`name` in kebab-case matching the folder, and a `description` specific enough to trigger at the right time).
