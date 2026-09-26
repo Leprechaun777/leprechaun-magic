@@ -2,7 +2,7 @@
 name: delegate
 description: >
   Shortcut placed before a list of work items. Each item is evaluated for the
-  right model tier (opus / sonnet / haiku), then handed to its own subagent
+  right model tier (fable / opus / sonnet / haiku), then handed to its own subagent
   running on that model. Independent items are spawned in parallel; items with
   real dependencies are run in ordered waves. Use when the user types
   "/delegate" followed by a list, or says "delegate these", "fan these out",
@@ -42,9 +42,15 @@ and follow it. Otherwise use this rubric:
 
 | Item looks like | Model | Why |
 |---|---|---|
-| Architecture, design, subtle debugging, concurrency/ordering correctness, algorithm or data-model reasoning, anything where being wrong is expensive and not obvious | `opus` | Hardest reasoning; correctness matters most |
+| Architecture and system design, data-model or algorithm design, concurrency/ordering correctness, anything where being wrong is expensive AND hard to notice (it passes review and tests and fails later) | `fable` | Top tier; reserve it for the items where the reasoning is the deliverable |
+| Subtle debugging with a known symptom, tricky multi-file changes whose parts interact, test design for a hard-to-trap failure, careful review of someone else's diff | `opus` | Deep reasoning at lower cost than the top tier |
 | Feature implementation, refactors, multi-file edits, writing tests, API/schema work with a known shape | `sonnet` | Strong code quality at lower cost |
 | Mechanical bulk edits, rote find-replace, fixture wiring, string extraction, formatting, log/output triage, file inventory | `haiku` | Needs throughput, not depth |
+
+The `model` values are aliases that always resolve to the newest model of that tier.
+As of 2026-09: `fable` = Fable 5.1, `opus` = Opus 5.5, `sonnet` = Sonnet 5,
+`haiku` = Haiku 4.5. Keep using the aliases, not version ids, so this skill does not
+go stale when a tier gets a new release. Just update this line.
 
 Rules:
 
@@ -53,7 +59,11 @@ Rules:
 - When torn between two tiers, take the cheaper one. Escalate by re-running that one
   item on the higher tier if the result comes back wrong.
 - Judge the item's *work*, not its word count. "Fix the off-by-one in the retry guard"
-  is short and is `opus`. "Rename this symbol across 40 files" is long and is `haiku`.
+  is short and is `opus`. "Design how two tabs share one lock without either ever
+  acting twice" is short and is `fable`. "Rename this symbol across 40 files" is long
+  and is `haiku`.
+- `fable` is the most expensive tier. Don't default to it for "important" items. Use it
+  when an `opus` answer would be plausibly wrong in a way nobody would catch.
 - Pick `subagent_type` too: `Explore` for read-only search/locate items, `Plan` for
   design-only items, `general-purpose` (or the project's own agent types) for anything
   that writes.
@@ -87,9 +97,10 @@ before the tokens are spent:
 Wave 1 (parallel)
   1. <item>              → sonnet / general-purpose
   2. <item>              → haiku  / general-purpose
-  3. <item>              → opus   / Plan
+  3. <item>              → fable  / Plan
+  4. <item>              → opus   / general-purpose
 Wave 2 (after 1)
-  4. <item>              → sonnet / general-purpose
+  5. <item>              → sonnet / general-purpose
 ```
 
 Then spawn. **Issue every Agent call for a wave in a single message** so they actually

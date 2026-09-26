@@ -33,7 +33,8 @@ Before using it, replace the `<owner>/<repo>` placeholders with your repository;
 
 Parallel work dispatcher. Type `/delegate` followed by a list of work items (or say "fan these out", "one agent per item") and it hands each item to its own subagent on the model tier that fits the work:
 
-- **opus** for architecture, subtle debugging, and anything where being wrong is expensive;
+- **fable** for architecture, system/data-model design, and concurrency correctness — anything where being wrong is expensive *and* hard to notice;
+- **opus** for subtle debugging, tricky multi-file changes, and careful review;
 - **sonnet** for feature implementation, refactors, and tests;
 - **haiku** for mechanical bulk edits and rote changes.
 
