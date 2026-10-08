@@ -48,8 +48,8 @@ and follow it. Otherwise use this rubric:
 | Mechanical bulk edits, rote find-replace, fixture wiring, string extraction, formatting, log/output triage, file inventory | `haiku` | Needs throughput, not depth |
 
 The `model` values are aliases that always resolve to the newest model of that tier.
-As of 2026-09: `fable` = Fable 5.1, `opus` = Opus 5.5, `sonnet` = Sonnet 5,
-`haiku` = Haiku 4.5. Keep using the aliases, not version ids, so this skill does not
+As of 2026-10: `fable` = Fable 5.1, `opus` = Opus 5.5, `sonnet` = Sonnet 5.5,
+`haiku` = Haiku 5.5. Keep using the aliases, not version ids, so this skill does not
 go stale when a tier gets a new release. Just update this line.
 
 Rules:
